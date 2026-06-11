@@ -2,10 +2,6 @@ package fr.cinemastre
 
 import kotlin.math.roundToInt
 
-/**
- * Fonctions de statistiques pures : une liste de films en entrée, des stats en sortie.
- * Aucune dépendance à la base ni au serveur -> faciles à tester unitairement.
- */
 object Stats {
 
     private fun round1(x: Double): Double = (x * 10).roundToInt() / 10.0

@@ -3,11 +3,6 @@ package fr.cinemastre
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
 
-/**
- * Représentation JSON d'un film du carnet.
- * Les clés sont identiques à la version précédente du projet,
- * le front est donc compatible tel quel.
- */
 @Serializable
 data class FilmDto(
     val id: Int? = null,
@@ -18,10 +13,8 @@ data class FilmDto(
     val review: String? = null,
     val watchedAt: String? = null,
 ) {
-    /** Logique métier simple, testée unitairement. */
     fun isHighlyRated(): Boolean = rating >= 4.0
 
-    /** Règles de validation (équivalent des contraintes Assert de la version Symfony). */
     fun validate(): List<String> {
         val errors = mutableListOf<String>()
         if (title.isBlank()) errors += "Le titre est obligatoire"

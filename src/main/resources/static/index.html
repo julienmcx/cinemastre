@@ -1,473 +1,900 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cinémastre — mon carnet de films</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --bg: #0b0a09;
-    --bg-2: #100e0c;
-    --surface: #19161200;
-    --card: #1a1714;
-    --card-hi: #221e19;
-    --line: rgba(245, 237, 225, 0.09);
-    --line-hi: rgba(245, 237, 225, 0.16);
-    --ink: #f4ede1;
-    --ink-soft: #b6aa98;
-    --ink-faint: #79705f;
-    --gold: #e7b552;
-    --gold-deep: #c8942d;
-    --rose: #d3624c;
-    --shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.85);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Hanken Grotesk', sans-serif;
-    background:
-      radial-gradient(1200px 600px at 50% -10%, rgba(231, 181, 82, 0.10), transparent 60%),
-      linear-gradient(180deg, var(--bg-2), var(--bg) 40%);
-    color: var(--ink);
-    min-height: 100vh;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    letter-spacing: 0.01em;
-  }
-
-  /* Film grain overlay */
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 28px 100px; position: relative; z-index: 1; }
-
-  /* ---------- Masthead ---------- */
-  header.masthead {
-    padding: 64px 0 38px;
-    border-bottom: 1px solid var(--line);
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
-    animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-  .brand-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .brand-eyebrow::before {
-    content: "";
-    width: 34px; height: 1px; background: var(--gold-deep);
-  }
-  h1.brand {
-    font-family: 'Fraunces', serif;
-    font-weight: 900;
-    font-size: clamp(46px, 8vw, 92px);
-    line-height: 0.92;
-    letter-spacing: -0.02em;
-  }
-  h1.brand em {
-    font-style: italic;
-    font-weight: 500;
-    color: var(--gold);
-  }
-  .tagline {
-    color: var(--ink-soft);
-    font-size: 15px;
-    margin-top: 16px;
-    max-width: 30ch;
-  }
-  .btn-add {
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--bg);
-    background: var(--gold);
-    border: none;
-    border-radius: 100px;
-    padding: 14px 26px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
-    box-shadow: 0 10px 30px -10px rgba(231, 181, 82, 0.6);
-    white-space: nowrap;
-  }
-  .btn-add:hover { transform: translateY(-2px); background: #f0c469; box-shadow: 0 16px 36px -10px rgba(231, 181, 82, 0.7); }
-  .btn-add span.plus { font-size: 20px; line-height: 0; margin-top: -2px; }
-
-  /* ---------- Dashboard ---------- */
-  .dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin: 40px 0 12px;
-  }
-  .stat {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 24px 22px 22px;
-    position: relative;
-    overflow: hidden;
-    animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  }
-  .stat:nth-child(1) { animation-delay: 0.05s; }
-  .stat:nth-child(2) { animation-delay: 0.12s; }
-  .stat:nth-child(3) { animation-delay: 0.19s; }
-  .stat:nth-child(4) { animation-delay: 0.26s; }
-  .stat .label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10.5px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-  .stat .value {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 46px;
-    line-height: 1;
-    margin-top: 14px;
-    letter-spacing: -0.02em;
-  }
-  .stat .value small { font-size: 18px; color: var(--ink-faint); font-weight: 400; }
-  .stat .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 8px; }
-  .stat.accent .value { color: var(--gold); }
-  .stat::before {
-    content: "";
-    position: absolute; right: -30px; top: -30px;
-    width: 90px; height: 90px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(231,181,82,0.10), transparent 70%);
-  }
-
-  /* ---------- Insights ---------- */
-  .insights {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 16px;
-    margin-top: 16px;
-  }
-  .panel {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 26px 26px 28px;
-    animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
-  }
-  .panel h2 {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    font-weight: 500;
-    margin-bottom: 20px;
-  }
-  .genre-row { margin-bottom: 16px; }
-  .genre-row:last-child { margin-bottom: 0; }
-  .genre-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
-  .genre-name { font-weight: 600; font-size: 14.5px; }
-  .genre-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-faint); }
-  .bar { height: 7px; background: rgba(255,255,255,0.05); border-radius: 100px; overflow: hidden; }
-  .bar > i {
-    display: block; height: 100%;
-    background: linear-gradient(90deg, var(--gold-deep), var(--gold));
-    border-radius: 100px;
-    width: 0;
-    transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .top-film {
-    display: flex; align-items: center; gap: 14px;
-    padding: 11px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .top-film:last-child { border-bottom: none; }
-  .top-rank {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px;
-    color: var(--ink-faint); width: 26px; flex-shrink: 0;
-  }
-  .top-film:first-child .top-rank { color: var(--gold); }
-  .top-info { flex: 1; min-width: 0; }
-  .top-title { font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .top-year { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-faint); }
-
-  /* ---------- Collection ---------- */
-  .section-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin: 54px 0 22px;
-  }
-  .section-head h2 {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px; letter-spacing: -0.01em;
-  }
-  .section-head .count { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-faint); letter-spacing: 0.1em; }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 16px;
-  }
-  .film {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 22px 22px 20px;
-    position: relative;
-    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s, background 0.25s;
-    animation: pop 0.5s ease both;
-  }
-  .film:hover {
-    transform: translateY(-4px);
-    border-color: var(--line-hi);
-    background: var(--card-hi);
-  }
-  .film .meta-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-  .film .genre-tag {
-    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--gold); border: 1px solid rgba(231,181,82,0.3); border-radius: 100px;
-    padding: 4px 11px; white-space: nowrap;
-  }
-  .film .del {
-    background: none; border: none; color: var(--ink-faint); cursor: pointer;
-    font-size: 18px; line-height: 1; padding: 2px 4px; border-radius: 6px;
-    transition: color 0.2s, background 0.2s; opacity: 0; flex-shrink: 0;
-  }
-  .film:hover .del { opacity: 1; }
-  .film .del:hover { color: var(--rose); background: rgba(211,98,76,0.12); }
-  .film h3 {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 23px; line-height: 1.15;
-    margin: 16px 0 4px; letter-spacing: -0.01em;
-  }
-  .film .year { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink-faint); }
-  .film .review {
-    color: var(--ink-soft); font-size: 13.5px; margin-top: 14px;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-    font-style: italic;
-  }
-  .film .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; }
-  .film .watched { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--ink-faint); letter-spacing: 0.08em; }
-
-  /* ---------- Stars ---------- */
-  .stars { position: relative; display: inline-block; font-size: 16px; line-height: 1; white-space: nowrap; }
-  .stars .base { color: rgba(255,255,255,0.14); }
-  .stars .fill {
-    position: absolute; top: 0; left: 0; overflow: hidden;
-    color: var(--gold); white-space: nowrap;
-  }
-
-  /* ---------- Empty ---------- */
-  .empty {
-    grid-column: 1 / -1; text-align: center; padding: 70px 20px;
-    border: 1px dashed var(--line-hi); border-radius: 18px; color: var(--ink-soft);
-  }
-  .empty .em-ic { font-size: 44px; opacity: 0.4; }
-  .empty p { margin-top: 14px; font-size: 15px; }
-
-  /* ---------- Modal ---------- */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(6,5,4,0.72); backdrop-filter: blur(6px);
-    display: flex; align-items: center; justify-content: center; padding: 24px;
-    opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 1000;
-  }
-  .overlay.open { opacity: 1; pointer-events: auto; }
-  .modal {
-    background: linear-gradient(180deg, var(--card-hi), var(--card));
-    border: 1px solid var(--line-hi); border-radius: 22px;
-    width: 100%; max-width: 480px; padding: 34px; box-shadow: var(--shadow);
-    transform: translateY(18px) scale(0.98); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .overlay.open .modal { transform: none; }
-  .modal h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px; margin-bottom: 4px; }
-  .modal .hint { color: var(--ink-faint); font-size: 13px; margin-bottom: 24px; }
-  .field { margin-bottom: 18px; }
-  .field label {
-    display: block; font-family: 'DM Mono', monospace; font-size: 10.5px;
-    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px;
-  }
-  .field input, .field textarea {
-    width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--line);
-    border-radius: 12px; padding: 12px 14px; color: var(--ink);
-    font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; transition: border-color 0.2s;
-  }
-  .field input:focus, .field textarea:focus { outline: none; border-color: var(--gold-deep); }
-  .field textarea { resize: vertical; min-height: 76px; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-  .rate-picker { display: flex; align-items: center; gap: 14px; }
-  .star-input { position: relative; font-size: 30px; line-height: 1; cursor: pointer; user-select: none; }
-  .star-input .base { color: rgba(255,255,255,0.16); }
-  .star-input .fill { position: absolute; top: 0; left: 0; overflow: hidden; color: var(--gold); white-space: nowrap; pointer-events: none; }
-  .rate-val { font-family: 'DM Mono', monospace; font-size: 15px; color: var(--gold); }
-
-  .modal-actions { display: flex; gap: 12px; margin-top: 28px; }
-  .btn-ghost {
-    flex: 1; background: none; border: 1px solid var(--line-hi); color: var(--ink-soft);
-    border-radius: 100px; padding: 13px; font-family: 'Hanken Grotesk'; font-weight: 600; font-size: 14px;
-    cursor: pointer; transition: border-color 0.2s, color 0.2s;
-  }
-  .btn-ghost:hover { border-color: var(--ink-soft); color: var(--ink); }
-  .btn-save {
-    flex: 2; background: var(--gold); border: none; color: var(--bg);
-    border-radius: 100px; padding: 13px; font-family: 'Hanken Grotesk'; font-weight: 700; font-size: 14px;
-    cursor: pointer; transition: background 0.2s, transform 0.15s;
-  }
-  .btn-save:hover { background: #f0c469; }
-  .btn-save:active { transform: scale(0.98); }
-
-  .offline { color: var(--rose); font-size: 12px; font-family: 'DM Mono', monospace; }
-
-  @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
-  @keyframes pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
-
-  @media (max-width: 880px) {
-    .dashboard { grid-template-columns: repeat(2, 1fr); }
-    .insights { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 520px) {
-    .wrap { padding: 0 18px 80px; }
-    header.masthead { padding-top: 44px; }
-    .dashboard { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .row2 { grid-template-columns: 1fr; }
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <header class="masthead">
-    <div>
-      <div class="brand-eyebrow">Journal de visionnage</div>
-      <h1 class="brand">Ciné<em>mastre</em></h1>
-      <p class="tagline">Les films que j'ai vus, mes notes, mon humeur. Un carnet, pas un algorithme.</p>
-    </div>
-    <button class="btn-add" id="openModal"><span class="plus">+</span> Ajouter un film</button>
-  </header>
-
-  <section class="dashboard" id="dashboard">
-    <div class="stat"><div class="label">Films vus</div><div class="value" id="s-total">—</div><div class="sub">dans le carnet</div></div>
-    <div class="stat accent"><div class="label">Note moyenne</div><div class="value" id="s-avg">—<small>/5</small></div><div class="sub" id="s-avg-sub">toutes périodes</div></div>
-    <div class="stat"><div class="label">Coups de cœur</div><div class="value" id="s-hi">—</div><div class="sub">notés 4★ ou plus</div></div>
-    <div class="stat"><div class="label">Genre favori</div><div class="value" id="s-genre" style="font-size:30px">—</div><div class="sub" id="s-genre-sub">le plus regardé</div></div>
-  </section>
-
-  <section class="insights">
-    <div class="panel">
-      <h2>Répartition par genre</h2>
-      <div id="genres"></div>
-    </div>
-    <div class="panel">
-      <h2>Mon Top 5</h2>
-      <div id="top"></div>
-    </div>
-  </section>
-
-  <div class="section-head">
-    <h2>La collection</h2>
-    <div class="count" id="collection-count"></div>
-  </div>
-  <div class="grid" id="grid"></div>
-
-</div>
-
-<!-- Modal -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h2>Nouveau film</h2>
-    <p class="hint">Ajoute un film que tu viens de voir.</p>
-
-    <div class="field">
-      <label>Titre</label>
-      <input id="f-title" type="text" placeholder="Ex. Mulholland Drive" />
-    </div>
-    <div class="row2">
-      <div class="field"><label>Année</label><input id="f-year" type="number" placeholder="2001" /></div>
-      <div class="field"><label>Genre</label><input id="f-genre" type="text" placeholder="Thriller" /></div>
-    </div>
-    <div class="field">
-      <label>Ma note</label>
-      <div class="rate-picker">
-        <div class="star-input" id="rate">
-          <span class="base">★★★★★</span>
-          <span class="fill" id="rate-fill">★★★★★</span>
-        </div>
-        <span class="rate-val" id="rate-val">0,0</span>
-      </div>
-    </div>
-    <div class="field">
-      <label>Quelques mots</label>
-      <textarea id="f-review" placeholder="Ce que j'en ai pensé…"></textarea>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-ghost" id="cancel">Annuler</button>
-      <button class="btn-save" id="save">Enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  // ----- Configuration des deux services -----
-  // Le front est servi par Ktor, l'API est sur la même origine.
-  const API_BASE = '';
-  // Le service de stats (Express) tourne sur le port 3000, même machine.
-  const STATS_BASE = ''; // même service : stats servies par Ktor
-
-  // ----- Helpers -----
-  const $ = (id) => document.getElementById(id);
-  const fmtRating = (r) => Number(r).toFixed(1).replace('.', ',');
-
-  function starsHTML(rating) {
-    const pct = (Number(rating) / 5) * 100;
-    return `<span class="stars"><span class="base">★★★★★</span><span class="fill" style="width:${pct}%">★★★★★</span></span>`;
-  }
-
-  function formatDate(iso) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
-  // ----- Chargement des films (API Cinémastre) -----
-  async function loadFilms() {
-    const res = await fetch(`${API_BASE}/api/logs`);
-    if (!res.ok) throw new Error('API films indisponible');
-    return res.json();
-  }
-
-  function renderFilms(films) {
-    const grid = $('grid');
-    $('collection-count').textContent = films.length
-      ? `${films.length} film${films.length > 1 ? 's' : ''}`
-      : '';
-
-    if (!films.length) {
-      grid.innerHTML = `<div class="empty"><div class="em-ic">🎬</div><p>Ton carnet est vide.<br>Ajoute ton premier film pour commencer.</p></div>`;
-      return;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinémastre — mon carnet de films</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0a09;
+      --bg-2: #100e0c;
+      --surface: #19161200;
+      --card: #1a1714;
+      --card-hi: #221e19;
+      --line: rgba(245, 237, 225, 0.09);
+      --line-hi: rgba(245, 237, 225, 0.16);
+      --ink: #f4ede1;
+      --ink-soft: #b6aa98;
+      --ink-faint: #79705f;
+      --gold: #e7b552;
+      --gold-deep: #c8942d;
+      --rose: #d3624c;
+      --shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.85);
     }
 
-    grid.innerHTML = films.map((f, i) => `
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Hanken Grotesk', sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(231, 181, 82, 0.10), transparent 60%),
+        linear-gradient(180deg, var(--bg-2), var(--bg) 40%);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: 0.01em;
+    }
+
+    /* Film grain overlay */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---------- Masthead ---------- */
+    header.masthead {
+      padding: 64px 0 38px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .brand-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: var(--gold-deep);
+    }
+
+    h1.brand {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: clamp(46px, 8vw, 92px);
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+    }
+
+    h1.brand em {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    .tagline {
+      color: var(--ink-soft);
+      font-size: 15px;
+      margin-top: 16px;
+      max-width: 30ch;
+    }
+
+    .btn-add {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--bg);
+      background: var(--gold);
+      border: none;
+      border-radius: 100px;
+      padding: 14px 26px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 10px 30px -10px rgba(231, 181, 82, 0.6);
+      white-space: nowrap;
+    }
+
+    .btn-add:hover {
+      transform: translateY(-2px);
+      background: #f0c469;
+      box-shadow: 0 16px 36px -10px rgba(231, 181, 82, 0.7);
+    }
+
+    .btn-add span.plus {
+      font-size: 20px;
+      line-height: 0;
+      margin-top: -2px;
+    }
+
+    /* ---------- Dashboard ---------- */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 40px 0 12px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px 22px 22px;
+      position: relative;
+      overflow: hidden;
+      animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .stat:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .stat:nth-child(2) {
+      animation-delay: 0.12s;
+    }
+
+    .stat:nth-child(3) {
+      animation-delay: 0.19s;
+    }
+
+    .stat:nth-child(4) {
+      animation-delay: 0.26s;
+    }
+
+    .stat .label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    .stat .value {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 46px;
+      line-height: 1;
+      margin-top: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .stat .value small {
+      font-size: 18px;
+      color: var(--ink-faint);
+      font-weight: 400;
+    }
+
+    .stat .sub {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      margin-top: 8px;
+    }
+
+    .stat.accent .value {
+      color: var(--gold);
+    }
+
+    .stat::before {
+      content: "";
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(231, 181, 82, 0.10), transparent 70%);
+    }
+
+    /* ---------- Insights ---------- */
+    .insights {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 26px 26px 28px;
+      animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+    }
+
+    .panel h2 {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .genre-row {
+      margin-bottom: 16px;
+    }
+
+    .genre-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .genre-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 7px;
+    }
+
+    .genre-name {
+      font-weight: 600;
+      font-size: 14.5px;
+    }
+
+    .genre-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-faint);
+    }
+
+    .bar {
+      height: 7px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .bar>i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+      border-radius: 100px;
+      width: 0;
+      transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .top-film {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top-film:last-child {
+      border-bottom: none;
+    }
+
+    .top-rank {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 22px;
+      color: var(--ink-faint);
+      width: 26px;
+      flex-shrink: 0;
+    }
+
+    .top-film:first-child .top-rank {
+      color: var(--gold);
+    }
+
+    .top-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .top-title {
+      font-weight: 600;
+      font-size: 14.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-year {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-faint);
+    }
+
+    /* ---------- Collection ---------- */
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin: 54px 0 22px;
+    }
+
+    .section-head h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 28px;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head .count {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.1em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 16px;
+    }
+
+    .film {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px 22px 20px;
+      position: relative;
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s, background 0.25s;
+      animation: pop 0.5s ease both;
+    }
+
+    .film:hover {
+      transform: translateY(-4px);
+      border-color: var(--line-hi);
+      background: var(--card-hi);
+    }
+
+    .film .meta-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .film .genre-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(231, 181, 82, 0.3);
+      border-radius: 100px;
+      padding: 4px 11px;
+      white-space: nowrap;
+    }
+
+    .film .del {
+      background: none;
+      border: none;
+      color: var(--ink-faint);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      opacity: 0;
+      flex-shrink: 0;
+    }
+
+    .film:hover .del {
+      opacity: 1;
+    }
+
+    .film .del:hover {
+      color: var(--rose);
+      background: rgba(211, 98, 76, 0.12);
+    }
+
+    .film h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 23px;
+      line-height: 1.15;
+      margin: 16px 0 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .film .year {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-faint);
+    }
+
+    .film .review {
+      color: var(--ink-soft);
+      font-size: 13.5px;
+      margin-top: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-style: italic;
+    }
+
+    .film .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+
+    .film .watched {
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      color: var(--ink-faint);
+      letter-spacing: 0.08em;
+    }
+
+    /* ---------- Stars ---------- */
+    .stars {
+      position: relative;
+      display: inline-block;
+      font-size: 16px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .stars .base {
+      color: rgba(255, 255, 255, 0.14);
+    }
+
+    .stars .fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    /* ---------- Empty ---------- */
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 70px 20px;
+      border: 1px dashed var(--line-hi);
+      border-radius: 18px;
+      color: var(--ink-soft);
+    }
+
+    .empty .em-ic {
+      font-size: 44px;
+      opacity: 0.4;
+    }
+
+    .empty p {
+      margin-top: 14px;
+      font-size: 15px;
+    }
+
+    /* ---------- Modal ---------- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 5, 4, 0.72);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 1000;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: linear-gradient(180deg, var(--card-hi), var(--card));
+      border: 1px solid var(--line-hi);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 480px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+      transform: translateY(18px) scale(0.98);
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .overlay.open .modal {
+      transform: none;
+    }
+
+    .modal h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+
+    .modal .hint {
+      color: var(--ink-faint);
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--gold-deep);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 76px;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .rate-picker {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .star-input {
+      position: relative;
+      font-size: 30px;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .star-input .base {
+      color: rgba(255, 255, 255, 0.16);
+    }
+
+    .star-input .fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      color: var(--gold);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .rate-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: var(--gold);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-ghost {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--line-hi);
+      color: var(--ink-soft);
+      border-radius: 100px;
+      padding: 13px;
+      font-family: 'Hanken Grotesk';
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--ink-soft);
+      color: var(--ink);
+    }
+
+    .btn-save {
+      flex: 2;
+      background: var(--gold);
+      border: none;
+      color: var(--bg);
+      border-radius: 100px;
+      padding: 13px;
+      font-family: 'Hanken Grotesk';
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-save:hover {
+      background: #f0c469;
+    }
+
+    .btn-save:active {
+      transform: scale(0.98);
+    }
+
+    .offline {
+      color: var(--rose);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media (max-width: 880px) {
+      .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .insights {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .wrap {
+        padding: 0 18px 80px;
+      }
+
+      header.masthead {
+        padding-top: 44px;
+      }
+
+      .dashboard {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .row2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Conception button (fixed, bottom center) */
+    .conception-btn {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 18px;
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      padding: 10px 18px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 600;
+      z-index: 1002;
+      box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.8);
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .conception-btn:hover {
+      transform: translateX(-50%) translateY(-3px);
+      background: var(--card-hi);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <header class="masthead">
+      <div>
+        <div class="brand-eyebrow">Journal de visionnage</div>
+        <h1 class="brand">Ciné<em>mastre</em></h1>
+        <p class="tagline">Les films que j'ai vus, mes notes, mon humeur.</p>
+      </div>
+      <button class="btn-add" id="openModal"><span class="plus">+</span> Ajouter un film</button>
+    </header>
+
+    <section class="dashboard" id="dashboard">
+      <div class="stat">
+        <div class="label">Films vus</div>
+        <div class="value" id="s-total">—</div>
+        <div class="sub">dans le carnet</div>
+      </div>
+      <div class="stat accent">
+        <div class="label">Note moyenne</div>
+        <div class="value" id="s-avg">—<small>/5</small></div>
+        <div class="sub" id="s-avg-sub">toutes périodes</div>
+      </div>
+      <div class="stat">
+        <div class="label">Coups de cœur</div>
+        <div class="value" id="s-hi">—</div>
+        <div class="sub">notés 4★ ou plus</div>
+      </div>
+      <div class="stat">
+        <div class="label">Genre favori</div>
+        <div class="value" id="s-genre" style="font-size:30px">—</div>
+        <div class="sub" id="s-genre-sub">le plus regardé</div>
+      </div>
+    </section>
+
+    <section class="insights">
+      <div class="panel">
+        <h2>Répartition par genre</h2>
+        <div id="genres"></div>
+      </div>
+      <div class="panel">
+        <h2>Mon Top 5</h2>
+        <div id="top"></div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h2>La collection</h2>
+      <div class="count" id="collection-count"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+
+  </div>
+
+  <a href="/conception.html" class="conception-btn" id="conceptionBtn">Conception</a>
+
+  <!-- Modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2>Nouveau film</h2>
+      <p class="hint">Ajoute un film que tu viens de voir.</p>
+
+      <div class="field">
+        <label>Titre</label>
+        <input id="f-title" type="text" placeholder="Ex. Mulholland Drive" />
+      </div>
+      <div class="row2">
+        <div class="field"><label>Année</label><input id="f-year" type="number" placeholder="2001" /></div>
+        <div class="field"><label>Genre</label><input id="f-genre" type="text" placeholder="Thriller" /></div>
+      </div>
+      <div class="field">
+        <label>Ma note</label>
+        <div class="rate-picker">
+          <div class="star-input" id="rate">
+            <span class="base">★★★★★</span>
+            <span class="fill" id="rate-fill">★★★★★</span>
+          </div>
+          <span class="rate-val" id="rate-val">0,0</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Quelques mots</label>
+        <textarea id="f-review" placeholder="Ce que j'en ai pensé…"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" id="cancel">Annuler</button>
+        <button class="btn-save" id="save">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '';
+    const STATS_BASE = '';
+    const $ = (id) => document.getElementById(id);
+    const fmtRating = (r) => Number(r).toFixed(1).replace('.', ',');
+
+    function starsHTML(rating) {
+      const pct = (Number(rating) / 5) * 100;
+      return `<span class="stars"><span class="base">★★★★★</span><span class="fill" style="width:${pct}%">★★★★★</span></span>`;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    async function loadFilms() {
+      const res = await fetch(`${API_BASE}/api/logs`);
+      if (!res.ok) throw new Error('API films indisponible');
+      return res.json();
+    }
+
+    function renderFilms(films) {
+      const grid = $('grid');
+      $('collection-count').textContent = films.length
+        ? `${films.length} film${films.length > 1 ? 's' : ''}`
+        : '';
+
+      if (!films.length) {
+        grid.innerHTML = `<div class="empty"><div class="em-ic">🎬</div><p>Ton carnet est vide.<br>Ajoute ton premier film pour commencer.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = films.map((f, i) => `
       <article class="film" style="animation-delay:${i * 0.04}s">
         <div class="meta-top">
           ${f.genre ? `<span class="genre-tag">${escapeHtml(f.genre)}</span>` : '<span></span>'}
@@ -483,35 +910,33 @@
       </article>
     `).join('');
 
-    grid.querySelectorAll('.del').forEach((btn) => {
-      btn.addEventListener('click', () => deleteFilm(btn.dataset.id));
-    });
-  }
-
-  // ----- Chargement des stats (service Express) -----
-  async function loadStats() {
-    try {
-      const [summary, byGenre, top] = await Promise.all([
-        fetch(`${STATS_BASE}/stats/summary`).then((r) => r.json()),
-        fetch(`${STATS_BASE}/stats/by-genre`).then((r) => r.json()),
-        fetch(`${STATS_BASE}/stats/top`).then((r) => r.json()),
-      ]);
-      renderStats(summary, byGenre, top);
-    } catch (e) {
-      // Le service de stats ne répond pas : on l'indique sans casser la page.
-      $('s-avg-sub').innerHTML = '<span class="offline">service stats hors ligne</span>';
+      grid.querySelectorAll('.del').forEach((btn) => {
+        btn.addEventListener('click', () => deleteFilm(btn.dataset.id));
+      });
     }
-  }
 
-  function renderStats(summary, byGenre, top) {
-    $('s-total').textContent = summary.totalFilms;
-    $('s-avg').innerHTML = `${fmtRating(summary.averageRating)}<small>/5</small>`;
-    $('s-hi').textContent = summary.highlyRatedCount;
-    $('s-genre').textContent = byGenre.length ? byGenre[0].genre : '—';
-    $('s-genre-sub').textContent = byGenre.length ? `${byGenre[0].count} film${byGenre[0].count > 1 ? 's' : ''}` : 'le plus regardé';
+    async function loadStats() {
+      try {
+        const [summary, byGenre, top] = await Promise.all([
+          fetch(`${STATS_BASE}/stats/summary`).then((r) => r.json()),
+          fetch(`${STATS_BASE}/stats/by-genre`).then((r) => r.json()),
+          fetch(`${STATS_BASE}/stats/top`).then((r) => r.json()),
+        ]);
+        renderStats(summary, byGenre, top);
+      } catch (e) {
+        $('s-avg-sub').innerHTML = '<span class="offline">service stats hors ligne</span>';
+      }
+    }
 
-    const maxCount = Math.max(1, ...byGenre.map((g) => g.count));
-    $('genres').innerHTML = byGenre.length ? byGenre.map((g) => `
+    function renderStats(summary, byGenre, top) {
+      $('s-total').textContent = summary.totalFilms;
+      $('s-avg').innerHTML = `${fmtRating(summary.averageRating)}<small>/5</small>`;
+      $('s-hi').textContent = summary.highlyRatedCount;
+      $('s-genre').textContent = byGenre.length ? byGenre[0].genre : '—';
+      $('s-genre-sub').textContent = byGenre.length ? `${byGenre[0].count} film${byGenre[0].count > 1 ? 's' : ''}` : 'le plus regardé';
+
+      const maxCount = Math.max(1, ...byGenre.map((g) => g.count));
+      $('genres').innerHTML = byGenre.length ? byGenre.map((g) => `
       <div class="genre-row">
         <div class="genre-head">
           <span class="genre-name">${escapeHtml(g.genre)}</span>
@@ -521,7 +946,7 @@
       </div>
     `).join('') : '<p style="color:var(--ink-faint);font-size:13px">Aucune donnée pour l\'instant.</p>';
 
-    $('top').innerHTML = top.length ? top.map((f, i) => `
+      $('top').innerHTML = top.length ? top.map((f, i) => `
       <div class="top-film">
         <div class="top-rank">${i + 1}</div>
         <div class="top-info">
@@ -531,96 +956,96 @@
         ${starsHTML(f.rating)}
       </div>
     `).join('') : '<p style="color:var(--ink-faint);font-size:13px">Aucun film noté.</p>';
-  }
+    }
 
-  // ----- Ajout / suppression -----
-  async function addFilm(data) {
-    const res = await fetch(`${API_BASE}/api/logs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Échec de l\'ajout');
-  }
+    // ----- Ajout / suppression -----
+    async function addFilm(data) {
+      const res = await fetch(`${API_BASE}/api/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Échec de l\'ajout');
+    }
 
-  async function deleteFilm(id) {
-    if (!confirm('Supprimer ce film du carnet ?')) return;
-    await fetch(`${API_BASE}/api/logs/${id}`, { method: 'DELETE' });
-    refresh();
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
-  // ----- Modal + sélecteur d'étoiles -----
-  let currentRating = 0;
-  const overlay = $('overlay');
-
-  function openModal() { overlay.classList.add('open'); $('f-title').focus(); }
-  function closeModal() {
-    overlay.classList.remove('open');
-    ['f-title', 'f-year', 'f-genre', 'f-review'].forEach((id) => ($(id).value = ''));
-    setRating(0);
-  }
-
-  function setRating(v) {
-    currentRating = v;
-    $('rate-fill').style.width = `${(v / 5) * 100}%`;
-    $('rate-val').textContent = fmtRating(v);
-  }
-
-  const rate = $('rate');
-  function ratingFromEvent(e) {
-    const rect = rate.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    let v = Math.ceil((x / rect.width) * 10) / 2; // pas de 0,5
-    return Math.min(5, Math.max(0.5, v));
-  }
-  rate.addEventListener('mousemove', (e) => {
-    const v = ratingFromEvent(e);
-    $('rate-fill').style.width = `${(v / 5) * 100}%`;
-    $('rate-val').textContent = fmtRating(v);
-  });
-  rate.addEventListener('mouseleave', () => setRating(currentRating));
-  rate.addEventListener('click', (e) => setRating(ratingFromEvent(e)));
-
-  $('openModal').addEventListener('click', openModal);
-  $('cancel').addEventListener('click', closeModal);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
-  $('save').addEventListener('click', async () => {
-    const title = $('f-title').value.trim();
-    if (!title) { $('f-title').focus(); return; }
-    const data = {
-      title,
-      year: $('f-year').value ? parseInt($('f-year').value, 10) : null,
-      genre: $('f-genre').value.trim() || null,
-      rating: currentRating,
-      review: $('f-review').value.trim() || null,
-    };
-    try {
-      await addFilm(data);
-      closeModal();
+    async function deleteFilm(id) {
+      if (!confirm('Supprimer ce film du carnet ?')) return;
+      await fetch(`${API_BASE}/api/logs/${id}`, { method: 'DELETE' });
       refresh();
-    } catch (e) {
-      alert('Impossible d\'ajouter le film. Le serveur répond-il ?');
     }
-  });
 
-  // ----- Orchestration -----
-  async function refresh() {
-    try {
-      const films = await loadFilms();
-      renderFilms(films);
-    } catch (e) {
-      $('grid').innerHTML = `<div class="empty"><div class="em-ic">⚠️</div><p>L'API des films ne répond pas.<br>Vérifie que le serveur Cinémastre tourne.</p></div>`;
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
-    loadStats();
-  }
 
-  refresh();
-</script>
+    // ----- Modal + sélecteur d'étoiles -----
+    let currentRating = 0;
+    const overlay = $('overlay');
+
+    function openModal() { overlay.classList.add('open'); $('f-title').focus(); }
+    function closeModal() {
+      overlay.classList.remove('open');
+      ['f-title', 'f-year', 'f-genre', 'f-review'].forEach((id) => ($(id).value = ''));
+      setRating(0);
+    }
+
+    function setRating(v) {
+      currentRating = v;
+      $('rate-fill').style.width = `${(v / 5) * 100}%`;
+      $('rate-val').textContent = fmtRating(v);
+    }
+
+    const rate = $('rate');
+    function ratingFromEvent(e) {
+      const rect = rate.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      let v = Math.ceil((x / rect.width) * 10) / 2;
+      return Math.min(5, Math.max(0.5, v));
+    }
+    rate.addEventListener('mousemove', (e) => {
+      const v = ratingFromEvent(e);
+      $('rate-fill').style.width = `${(v / 5) * 100}%`;
+      $('rate-val').textContent = fmtRating(v);
+    });
+    rate.addEventListener('mouseleave', () => setRating(currentRating));
+    rate.addEventListener('click', (e) => setRating(ratingFromEvent(e)));
+
+    $('openModal').addEventListener('click', openModal);
+    $('cancel').addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    $('save').addEventListener('click', async () => {
+      const title = $('f-title').value.trim();
+      if (!title) { $('f-title').focus(); return; }
+      const data = {
+        title,
+        year: $('f-year').value ? parseInt($('f-year').value, 10) : null,
+        genre: $('f-genre').value.trim() || null,
+        rating: currentRating,
+        review: $('f-review').value.trim() || null,
+      };
+      try {
+        await addFilm(data);
+        closeModal();
+        refresh();
+      } catch (e) {
+        alert('Impossible d\'ajouter le film. Le serveur répond-il ?');
+      }
+    });
+
+    async function refresh() {
+      try {
+        const films = await loadFilms();
+        renderFilms(films);
+      } catch (e) {
+        $('grid').innerHTML = `<div class="empty"><div class="em-ic">⚠️</div><p>L'API des films ne répond pas.<br>Vérifie que le serveur Cinémastre tourne.</p></div>`;
+      }
+      loadStats();
+    }
+
+    refresh();
+  </script>
 </body>
+
 </html>

@@ -26,7 +26,6 @@ fun Application.module() {
     install(CORS) { anyHost() }
 
     routing {
-        // Le front (index.html) est servi depuis src/main/resources/static
         staticResources("/", "static")
 
         get("/health") { call.respond(Health("ok")) }

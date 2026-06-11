@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinémastre — Conception BDD (MCD · MLD · MPD)</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0a09;
+      --card: #1a1714;
+      --card-hi: #221e19;
+      --line: rgba(245, 237, 225, 0.12);
+      --ink: #f4ede1;
+      --ink-soft: #b6aa98;
+      --ink-faint: #79705f;
+      --gold: #e7b552;
+      --gold-deep: #c8942d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Hanken Grotesk', sans-serif;
+      background: #0b0a09;
+      color: #f4ede1;
+      padding: 60px 50px 90px;
+      line-height: 1.5;
+    }
+
+    .doc {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* ---- En-tête ---- */
+    .doc-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #e7b552;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 54px;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    h1 em {
+      font-style: italic;
+      font-weight: 500;
+      color: #e7b552;
+    }
+
+    .doc-sub {
+      color: #b6aa98;
+      font-size: 15px;
+      margin-top: 14px;
+    }
+
+    /* ---- Sections ---- */
+    section {
+      margin-top: 64px;
+    }
+
+    .sec-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: #e7b552;
+      letter-spacing: 0.3em;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 32px;
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .sec-desc {
+      color: #b6aa98;
+      font-size: 14px;
+      margin-bottom: 26px;
+      max-width: 70ch;
+    }
+
+    /* ---- Tables ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1a1714;
+      border: 1px solid rgba(245, 237, 225, 0.12);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    th {
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #79705f;
+      text-align: left;
+      padding: 13px 16px;
+      background: #221e19;
+      border-bottom: 1px solid rgba(245, 237, 225, 0.12);
+    }
+
+    td {
+      padding: 12px 16px;
+      font-size: 13.5px;
+      border-bottom: 1px solid rgba(245, 237, 225, 0.07);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    td.code,
+    .mono {
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+    }
+
+    td .pk-badge,
+    td .fk-badge,
+    td .uk-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-left: 8px;
+    }
+
+    .pk-badge {
+      color: #0b0a09;
+      background: #e7b552;
+    }
+
+    .fk-badge {
+      color: #e7b552;
+      border: 1px solid rgba(231, 181, 82, 0.45);
+    }
+
+    .uk-badge {
+      color: #b6aa98;
+      border: 1px solid rgba(245, 237, 225, 0.25);
+    }
+
+    /* ---- MCD : entités + association ---- */
+    .mcd {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      background: #14110e;
+      border: 1px solid rgba(245, 237, 225, 0.12);
+      border-radius: 18px;
+      padding: 56px 36px;
+    }
+
+    .entity {
+      width: 280px;
+      background: #1a1714;
+      border: 1.5px solid #e7b552;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .entity-title {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 19px;
+      text-align: center;
+      padding: 12px;
+      background: #2a241c;
+      border-bottom: 1.5px solid #e7b552;
+      letter-spacing: 0.04em;
+    }
+
+    .entity-attrs {
+      padding: 14px 18px;
+    }
+
+    .attr {
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      color: #d8cdbb;
+      padding: 5px 0;
+    }
+
+    .attr.ident {
+      color: #e7b552;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .attr-type {
+      color: #79705f;
+    }
+
+    .assoc-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 240px;
+    }
+
+    .assoc-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .assoc-line {
+      flex: 1;
+      height: 1.5px;
+      background: #c8942d;
+    }
+
+    .assoc {
+      background: #221e19;
+      border: 1.5px solid #c8942d;
+      border-radius: 100px;
+      padding: 10px 22px;
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: #e7b552;
+      white-space: nowrap;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 10px;
+      padding: 0 4px;
+    }
+
+    .card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: #b6aa98;
+      background: #14110e;
+      padding: 2px 8px;
+    }
+
+    .mcd-legend {
+      margin-top: 18px;
+      color: #79705f;
+      font-size: 12.5px;
+      font-family: 'DM Mono', monospace;
+      text-align: center;
+    }
+
+    /* ---- MLD : schémas relationnels ---- */
+    .mld-schema {
+      background: #14110e;
+      border: 1px solid rgba(245, 237, 225, 0.12);
+      border-radius: 14px;
+      padding: 26px 30px;
+      margin-bottom: 22px;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+    }
+
+    .mld-schema .rel {
+      color: #e7b552;
+      font-weight: 500;
+    }
+
+    .mld-schema u {
+      text-underline-offset: 4px;
+    }
+
+    .mld-schema .fk {
+      color: #e7b552;
+    }
+
+    .rule {
+      border-left: 3px solid #c8942d;
+      padding: 12px 18px;
+      margin-top: 20px;
+      background: #16130f;
+      color: #b6aa98;
+      font-size: 13.5px;
+      border-radius: 0 10px 10px 0;
+    }
+
+    /* ---- MPD : SQL ---- */
+    .sql {
+      background: #14110e;
+      border: 1px solid rgba(245, 237, 225, 0.12);
+      border-radius: 14px;
+      padding: 26px 30px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.75;
+      white-space: pre;
+      color: #d8cdbb;
+      overflow-x: auto;
+    }
+
+    .sql .kw {
+      color: #e7b552;
+    }
+
+    .sql .cm {
+      color: #79705f;
+    }
+
+    .spacer-table {
+      margin-bottom: 22px;
+    }
+
+    .h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 30px 0 12px;
+      color: #f4ede1;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="doc">
+
+    <header>
+      <div class="doc-eyebrow">Dossier de conception · Base de données</div>
+      <h1>Ciné<em>mastre</em></h1>
+      <p class="doc-sub">Conception selon la méthode Merise — Dictionnaire des données · MCD · MLD · MPD</p>
+    </header>
+
+    <!-- ================= 1. DICTIONNAIRE ================= -->
+    <section>
+      <div class="sec-num">01</div>
+      <h2>Dictionnaire des données</h2>
+      <p class="sec-desc">Inventaire de toutes les données manipulées par l'application, avec leur type et leurs
+        contraintes.</p>
+      <table>
+        <tr>
+          <th>Code</th>
+          <th>Désignation</th>
+          <th>Type</th>
+          <th>Contraintes</th>
+        </tr>
+        <tr>
+          <td class="code">id_film</td>
+          <td>Identifiant du film</td>
+          <td>Entier</td>
+          <td>Clé primaire, auto-incrément</td>
+        </tr>
+        <tr>
+          <td class="code">titre</td>
+          <td>Titre du film</td>
+          <td>Texte (255)</td>
+          <td>Obligatoire</td>
+        </tr>
+        <tr>
+          <td class="code">annee</td>
+          <td>Année de sortie</td>
+          <td>Entier</td>
+          <td>Facultatif · entre 1888 et 2100</td>
+        </tr>
+        <tr>
+          <td class="code">note</td>
+          <td>Note personnelle</td>
+          <td>Réel</td>
+          <td>Obligatoire · entre 0,5 et 5 par demi-points</td>
+        </tr>
+        <tr>
+          <td class="code">critique</td>
+          <td>Avis personnel</td>
+          <td>Texte long</td>
+          <td>Facultatif</td>
+        </tr>
+        <tr>
+          <td class="code">date_visionnage</td>
+          <td>Date à laquelle le film a été vu</td>
+          <td>Date</td>
+          <td>Obligatoire · ne peut pas être dans le futur</td>
+        </tr>
+        <tr>
+          <td class="code">id_genre</td>
+          <td>Identifiant du genre</td>
+          <td>Entier</td>
+          <td>Clé primaire, auto-incrément</td>
+        </tr>
+        <tr>
+          <td class="code">libelle</td>
+          <td>Nom du genre (Sci-Fi, Comédie…)</td>
+          <td>Texte (100)</td>
+          <td>Obligatoire · unique</td>
+        </tr>
+      </table>
+
+      <div class="rule" style="margin-top:26px">
+        <strong style="color:#e7b552">Règles de gestion</strong><br />
+        RG1 — Un film appartient à au plus un genre (le genre peut être inconnu).<br />
+        RG2 — Un genre peut regrouper zéro ou plusieurs films.<br />
+        RG3 — La note est attribuée entre 0,5 et 5, par demi-points.<br />
+        RG4 — Un film ne peut pas être marqué comme vu à une date future.
+      </div>
+    </section>
+
+    <!-- ================= 2. MCD ================= -->
+    <section>
+      <div class="sec-num">02</div>
+      <h2>MCD — Modèle Conceptuel de Données</h2>
+      <p class="sec-desc">Deux entités, FILM et GENRE, reliées par l'association APPARTENIR. L'identifiant de chaque
+        entité est souligné.</p>
+
+      <div class="mcd">
+        <div class="entity">
+          <div class="entity-title">FILM</div>
+          <div class="entity-attrs">
+            <div class="attr ident">id_film</div>
+            <div class="attr">titre <span class="attr-type">: texte</span></div>
+            <div class="attr">annee <span class="attr-type">: entier</span></div>
+            <div class="attr">note <span class="attr-type">: réel</span></div>
+            <div class="attr">critique <span class="attr-type">: texte</span></div>
+            <div class="attr">date_visionnage <span class="attr-type">: date</span></div>
+          </div>
+        </div>
+
+        <div class="assoc-link">
+          <div class="assoc-row">
+            <div class="assoc-line"></div>
+            <div class="assoc">appartenir</div>
+            <div class="assoc-line"></div>
+          </div>
+          <div class="cards">
+            <span class="card-label">(0,1)</span>
+            <span class="card-label">(0,n)</span>
+          </div>
+        </div>
+
+        <div class="entity">
+          <div class="entity-title">GENRE</div>
+          <div class="entity-attrs">
+            <div class="attr ident">id_genre</div>
+            <div class="attr">libelle <span class="attr-type">: texte</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="mcd-legend">Un FILM appartient à 0 ou 1 GENRE · Un GENRE regroupe 0 à n FILMs</p>
+    </section>
+
+    <!-- ================= 3. MLD ================= -->
+    <section>
+      <div class="sec-num">03</div>
+      <h2>MLD — Modèle Logique de Données</h2>
+      <p class="sec-desc">Passage au modèle relationnel. L'association 1:N est traduite par la migration de la clé du
+        côté (0,n) en clé étrangère dans la relation du côté (0,1). La cardinalité minimale étant 0, la clé étrangère
+        accepte NULL.</p>
+
+      <div class="mld-schema">
+        <span class="rel">GENRE</span> ( <u>id_genre</u>, libelle )<br /><br />
+        <span class="rel">FILM</span> ( <u>id_film</u>, titre, annee, note, critique, date_visionnage, <span
+          class="fk">#id_genre</span> )
+      </div>
+
+      <div class="h3">Relation GENRE</div>
+      <table class="spacer-table">
+        <tr>
+          <th>Attribut</th>
+          <th>Type logique</th>
+          <th>Rôle</th>
+        </tr>
+        <tr>
+          <td class="code">id_genre</td>
+          <td>Entier</td>
+          <td>Clé primaire <span class="pk-badge">PK</span></td>
+        </tr>
+        <tr>
+          <td class="code">libelle</td>
+          <td>Texte (100)</td>
+          <td>Unique <span class="uk-badge">UNIQUE</span></td>
+        </tr>
+      </table>
+
+      <div class="h3">Relation FILM</div>
+      <table>
+        <tr>
+          <th>Attribut</th>
+          <th>Type logique</th>
+          <th>Rôle</th>
+        </tr>
+        <tr>
+          <td class="code">id_film</td>
+          <td>Entier</td>
+          <td>Clé primaire <span class="pk-badge">PK</span></td>
+        </tr>
+        <tr>
+          <td class="code">titre</td>
+          <td>Texte (255)</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="code">annee</td>
+          <td>Entier, NULL</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="code">note</td>
+          <td>Réel</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="code">critique</td>
+          <td>Texte long, NULL</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="code">date_visionnage</td>
+          <td>Date</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="code">id_genre</td>
+          <td>Entier, NULL</td>
+          <td>Clé étrangère → GENRE(id_genre) <span class="fk-badge">FK</span></td>
+        </tr>
+      </table>
+
+      <div class="rule">
+        <strong style="color:#e7b552">Règle de passage appliquée</strong> — Association binaire de type 1:N
+        (cardinalité max 1 côté FILM, n côté GENRE) : la clé primaire de GENRE migre dans FILM
+        en tant que clé étrangère <span class="mono">#id_genre</span>, nullable car la cardinalité minimale côté FILM
+        est 0.
+      </div>
+    </section>
+
+    <!-- ================= 4. MPD ================= -->
+    <section>
+      <div class="sec-num">04</div>
+      <h2>MPD — Modèle Physique de Données</h2>
+      <p class="sec-desc">Implémentation SQLite. Les règles de gestion sont traduites en contraintes CHECK, NOT NULL,
+        UNIQUE et REFERENCES.</p>
+
+      <div class="h3">Table genre</div>
+      <table class="spacer-table">
+        <tr>
+          <th>Colonne</th>
+          <th>Type SQLite</th>
+          <th>Contraintes</th>
+        </tr>
+        <tr>
+          <td class="code">id_genre</td>
+          <td class="code">INTEGER</td>
+          <td class="code">PRIMARY KEY AUTOINCREMENT</td>
+        </tr>
+        <tr>
+          <td class="code">libelle</td>
+          <td class="code">VARCHAR(100)</td>
+          <td class="code">NOT NULL · UNIQUE</td>
+        </tr>
+      </table>
+
+      <div class="h3">Table film</div>
+      <table class="spacer-table">
+        <tr>
+          <th>Colonne</th>
+          <th>Type SQLite</th>
+          <th>Contraintes</th>
+        </tr>
+        <tr>
+          <td class="code">id_film</td>
+          <td class="code">INTEGER</td>
+          <td class="code">PRIMARY KEY AUTOINCREMENT</td>
+        </tr>
+        <tr>
+          <td class="code">titre</td>
+          <td class="code">VARCHAR(255)</td>
+          <td class="code">NOT NULL</td>
+        </tr>
+        <tr>
+          <td class="code">annee</td>
+          <td class="code">INTEGER</td>
+          <td class="code">NULL · CHECK (annee BETWEEN 1888 AND 2100)</td>
+        </tr>
+        <tr>
+          <td class="code">note</td>
+          <td class="code">REAL</td>
+          <td class="code">NOT NULL · CHECK (note BETWEEN 0.5 AND 5.0)</td>
+        </tr>
+        <tr>
+          <td class="code">critique</td>
+          <td class="code">TEXT</td>
+          <td class="code">NULL</td>
+        </tr>
+        <tr>
+          <td class="code">date_visionnage</td>
+          <td class="code">DATE</td>
+          <td class="code">NOT NULL</td>
+        </tr>
+        <tr>
+          <td class="code">id_genre</td>
+          <td class="code">INTEGER</td>
+          <td class="code">NULL · REFERENCES genre(id_genre)</td>
+        </tr>
+      </table>
+
+      <div class="h3">Script SQL</div>
+      <div class="sql"><span class="kw">CREATE TABLE</span> genre (
+        id_genre INTEGER <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,
+        libelle VARCHAR(100) <span class="kw">NOT NULL UNIQUE</span>
+        );
+
+        <span class="kw">CREATE TABLE</span> film (
+        id_film INTEGER <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,
+        titre VARCHAR(255) <span class="kw">NOT NULL</span>,
+        annee INTEGER <span class="kw">NULL</span>
+        <span class="kw">CHECK</span> (annee IS NULL OR annee BETWEEN 1888 AND 2100),
+        note REAL <span class="kw">NOT NULL</span>
+        <span class="kw">CHECK</span> (note BETWEEN 0.5 AND 5.0),
+        critique TEXT <span class="kw">NULL</span>,
+        date_visionnage DATE <span class="kw">NOT NULL</span>,
+        id_genre INTEGER <span class="kw">NULL</span>
+        <span class="kw">REFERENCES</span> genre(id_genre)
+        );
+      </div>
+
+      <div class="rule">
+        <strong style="color:#e7b552">Dans l'application</strong> — Ces tables sont créées au démarrage par l'ORM
+        Exposed
+        (<span class="mono">Db.kt</span>), dont les définitions correspondent à ce MPD. La validation applicative
+        (titre obligatoire, note bornée, date non future) est réalisée dans <span class="mono">Models.kt</span>
+        et renvoie des erreurs HTTP 422 lisibles par l'utilisateur.
+      </div>
+    </section>
+
+  </div>
+</body>
+
+</html>
