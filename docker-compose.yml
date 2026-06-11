@@ -1,0 +1,11 @@
+services:
+  cinemastre:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # La base SQLite survit aux redémarrages des conteneurs
+      - cinemastre-data:/app/data
+
+volumes:
+  cinemastre-data:

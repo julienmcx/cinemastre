@@ -1,0 +1,16 @@
+# Gradle
+build/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Base de données locale
+data/
+*.db
+
+# Divers
+.DS_Store
+*.log
