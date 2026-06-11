@@ -1038,6 +1038,7 @@
     }
 
     function showConfirm(message, title = 'Confirmer') {
+      console.log('showConfirm called with:', message);
       return new Promise((resolve) => {
         const ov = document.createElement('div'); ov.className = 'overlay open'; ov.style.zIndex = 2000;
         const m = document.createElement('div'); m.className = 'modal';
@@ -1050,6 +1051,34 @@
         document.addEventListener('keydown', onKey);
       });
     }
+
+    // Global: override window.alert to use custom modal
+    window.alert = function (message) { showAlert(message); };
+
+    // Instrument: log native confirm calls to find source
+    (function () {
+      const _nativeConfirm = window.confirm.bind(window);
+      window.confirm = function (message) {
+        console.warn('native window.confirm called with:', message, '\nStack:', new Error().stack);
+        return _nativeConfirm(message);
+      };
+    })();
+
+    // Wrap fetch to display custom modal on 404 responses
+    (function () {
+      const _fetch = window.fetch.bind(window);
+      window.fetch = async function (...args) {
+        const res = await _fetch(...args);
+        try {
+          if (res && res.status === 404) {
+            showAlert('Ressource introuvable (404).');
+          }
+        } catch (e) {
+          // ignore
+        }
+        return res;
+      };
+    })();
 
     $('save').addEventListener('click', async () => {
       const title = $('f-title').value.trim();
