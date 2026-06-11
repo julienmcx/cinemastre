@@ -877,7 +877,10 @@
 
     async function loadFilms() {
       const res = await fetch(`${API_BASE}/api/logs`);
-      if (!res.ok) throw new Error('API films indisponible');
+      if (!res.ok) {
+        try { await showAlert(`Erreur ${res.status} : impossible de charger la liste des films.`); } catch (e) { /* ignore */ }
+        throw new Error('API films indisponible');
+      }
       return res.json();
     }
 
@@ -967,8 +970,16 @@
     }
 
     async function deleteFilm(id) {
-      if (!confirm('Supprimer ce film du carnet ?')) return;
-      await fetch(`${API_BASE}/api/logs/${id}`, { method: 'DELETE' });
+      const ok = await showConfirm('Supprimer ce film du carnet ?');
+      if (!ok) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/logs/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          await showAlert(`Suppression échouée (${res.status})`);
+        }
+      } catch (e) {
+        await showAlert('Erreur réseau lors de la suppression.');
+      }
       refresh();
     }
 
@@ -1013,6 +1024,33 @@
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+    // Custom alert / confirm using site's modal styles
+    function showAlert(message, title = 'Erreur') {
+      return new Promise((resolve) => {
+        const ov = document.createElement('div'); ov.className = 'overlay open'; ov.style.zIndex = 2000;
+        const m = document.createElement('div'); m.className = 'modal';
+        m.innerHTML = `<h2>${escapeHtml(title)}</h2><p class="hint">${escapeHtml(message)}</p><div class="modal-actions"><button class="btn-ghost">Fermer</button><button class="btn-save">OK</button></div>`;
+        ov.appendChild(m); document.body.appendChild(ov);
+        m.querySelector('.btn-ghost').addEventListener('click', () => { document.body.removeChild(ov); resolve(); });
+        m.querySelector('.btn-save').addEventListener('click', () => { document.body.removeChild(ov); resolve(); });
+        ov.addEventListener('click', (e) => { if (e.target === ov) { document.body.removeChild(ov); resolve(); } });
+      });
+    }
+
+    function showConfirm(message, title = 'Confirmer') {
+      return new Promise((resolve) => {
+        const ov = document.createElement('div'); ov.className = 'overlay open'; ov.style.zIndex = 2000;
+        const m = document.createElement('div'); m.className = 'modal';
+        m.innerHTML = `<h2>${escapeHtml(title)}</h2><p class="hint">${escapeHtml(message)}</p><div class="modal-actions"><button class="btn-ghost">Annuler</button><button class="btn-save">Confirmer</button></div>`;
+        ov.appendChild(m); document.body.appendChild(ov);
+        m.querySelector('.btn-ghost').addEventListener('click', () => { document.body.removeChild(ov); resolve(false); });
+        m.querySelector('.btn-save').addEventListener('click', () => { document.body.removeChild(ov); resolve(true); });
+        ov.addEventListener('click', (e) => { if (e.target === ov) { document.body.removeChild(ov); resolve(false); } });
+        function onKey(e) { if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); if (document.body.contains(ov)) document.body.removeChild(ov); resolve(false); } }
+        document.addEventListener('keydown', onKey);
+      });
+    }
+
     $('save').addEventListener('click', async () => {
       const title = $('f-title').value.trim();
       if (!title) { $('f-title').focus(); return; }
@@ -1028,7 +1066,7 @@
         closeModal();
         refresh();
       } catch (e) {
-        alert('Impossible d\'ajouter le film. Le serveur répond-il ?');
+        await showAlert('Impossible d\'ajouter le film. Le serveur répond-il ?');
       }
     });
 
