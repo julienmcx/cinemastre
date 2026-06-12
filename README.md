@@ -152,8 +152,6 @@ cinemastre/
 ├── Dockerfile                  # build multi-étapes Gradle → JRE
 ├── docker-compose.yml          # + volume pour la persistance SQLite
 ├── .github/workflows/ci.yml    # tests + push Docker Hub
-├── docs/
-│   └── CONCEPTION.md           # 📐 MCD, MLD, MPD (Merise)
 └── src/
     ├── main/
     │   ├── kotlin/fr/cinemastre/
