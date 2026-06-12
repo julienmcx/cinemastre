@@ -27,6 +27,12 @@
       padding: 0;
     }
 
+    html,
+    body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Hanken Grotesk', sans-serif;
       background: #0b0a09;
@@ -53,7 +59,7 @@
     h1 {
       font-family: 'Fraunces', serif;
       font-weight: 900;
-      font-size: 54px;
+      font-size: clamp(38px, 9vw, 54px);
       letter-spacing: -0.02em;
       line-height: 1;
     }
@@ -86,7 +92,7 @@
     h2 {
       font-family: 'Fraunces', serif;
       font-weight: 600;
-      font-size: 32px;
+      font-size: clamp(24px, 6vw, 32px);
       letter-spacing: -0.01em;
       margin-bottom: 6px;
     }
@@ -98,9 +104,16 @@
       max-width: 70ch;
     }
 
-    /* ---- Tables ---- */
+    /* ---- Tables (avec défilement interne sur mobile) ---- */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 14px;
+    }
+
     table {
       width: 100%;
+      min-width: 560px;
       border-collapse: collapse;
       background: #1a1714;
       border: 1px solid rgba(245, 237, 225, 0.12);
@@ -168,7 +181,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0;
       background: #14110e;
       border: 1px solid rgba(245, 237, 225, 0.12);
       border-radius: 18px;
@@ -177,6 +189,7 @@
 
     .entity {
       width: 280px;
+      flex-shrink: 0;
       background: #1a1714;
       border: 1.5px solid #e7b552;
       border-radius: 12px;
@@ -217,19 +230,16 @@
 
     .assoc-link {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      width: 240px;
-    }
-
-    .assoc-row {
-      display: flex;
-      align-items: center;
-      width: 100%;
+      gap: 8px;
+      width: 300px;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     .assoc-line {
       flex: 1;
+      min-width: 14px;
       height: 1.5px;
       background: #c8942d;
     }
@@ -246,20 +256,11 @@
       white-space: nowrap;
     }
 
-    .cards {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      margin-top: 10px;
-      padding: 0 4px;
-    }
-
     .card-label {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
       color: #b6aa98;
-      background: #14110e;
-      padding: 2px 8px;
+      white-space: nowrap;
     }
 
     .mcd-legend {
@@ -279,6 +280,7 @@
       margin-bottom: 22px;
       font-family: 'DM Mono', monospace;
       font-size: 15px;
+      overflow-wrap: anywhere;
     }
 
     .mld-schema .rel {
@@ -316,6 +318,7 @@
       white-space: pre;
       color: #d8cdbb;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .sql .kw {
@@ -337,6 +340,92 @@
       margin: 30px 0 12px;
       color: #f4ede1;
     }
+
+    /* ---- Pied de page : retour à l'accueil ---- */
+    .doc-footer {
+      text-align: center;
+      margin-top: 80px;
+    }
+
+    .btn-home {
+      display: inline-block;
+      background: #e7b552;
+      color: #0b0a09;
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 30px;
+      border-radius: 100px;
+      text-decoration: none;
+      box-shadow: 0 10px 30px -10px rgba(231, 181, 82, 0.6);
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-home:hover {
+      background: #f0c469;
+      transform: translateY(-2px);
+    }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 760px) {
+      body {
+        padding: 40px 16px 70px;
+      }
+
+      section {
+        margin-top: 46px;
+      }
+
+      /* Le MCD passe en colonne : FILM, puis l'association verticale, puis GENRE */
+      .mcd {
+        flex-direction: column;
+        padding: 32px 18px;
+      }
+
+      .entity {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .assoc-link {
+        flex-direction: column;
+        width: auto;
+        padding: 4px 0;
+        gap: 6px;
+      }
+
+      .assoc-line {
+        flex: none;
+        width: 1.5px;
+        height: 22px;
+        min-width: 0;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+
+      td.code,
+      .mono {
+        font-size: 11px;
+      }
+
+      .mld-schema {
+        padding: 18px 18px;
+        font-size: 13px;
+      }
+
+      .sql {
+        padding: 18px 16px;
+        font-size: 11.5px;
+      }
+
+      .rule {
+        font-size: 12.5px;
+      }
+    }
   </style>
 </head>
 
@@ -355,62 +444,64 @@
       <h2>Dictionnaire des données</h2>
       <p class="sec-desc">Inventaire de toutes les données manipulées par l'application, avec leur type et leurs
         contraintes.</p>
-      <table>
-        <tr>
-          <th>Code</th>
-          <th>Désignation</th>
-          <th>Type</th>
-          <th>Contraintes</th>
-        </tr>
-        <tr>
-          <td class="code">id_film</td>
-          <td>Identifiant du film</td>
-          <td>Entier</td>
-          <td>Clé primaire, auto-incrément</td>
-        </tr>
-        <tr>
-          <td class="code">titre</td>
-          <td>Titre du film</td>
-          <td>Texte (255)</td>
-          <td>Obligatoire</td>
-        </tr>
-        <tr>
-          <td class="code">annee</td>
-          <td>Année de sortie</td>
-          <td>Entier</td>
-          <td>Facultatif · entre 1888 et 2100</td>
-        </tr>
-        <tr>
-          <td class="code">note</td>
-          <td>Note personnelle</td>
-          <td>Réel</td>
-          <td>Obligatoire · entre 0,5 et 5 par demi-points</td>
-        </tr>
-        <tr>
-          <td class="code">critique</td>
-          <td>Avis personnel</td>
-          <td>Texte long</td>
-          <td>Facultatif</td>
-        </tr>
-        <tr>
-          <td class="code">date_visionnage</td>
-          <td>Date à laquelle le film a été vu</td>
-          <td>Date</td>
-          <td>Obligatoire · ne peut pas être dans le futur</td>
-        </tr>
-        <tr>
-          <td class="code">id_genre</td>
-          <td>Identifiant du genre</td>
-          <td>Entier</td>
-          <td>Clé primaire, auto-incrément</td>
-        </tr>
-        <tr>
-          <td class="code">libelle</td>
-          <td>Nom du genre (Sci-Fi, Comédie…)</td>
-          <td>Texte (100)</td>
-          <td>Obligatoire · unique</td>
-        </tr>
-      </table>
+      <div class="table-scroll">
+        <table>
+          <tr>
+            <th>Code</th>
+            <th>Désignation</th>
+            <th>Type</th>
+            <th>Contraintes</th>
+          </tr>
+          <tr>
+            <td class="code">id_film</td>
+            <td>Identifiant du film</td>
+            <td>Entier</td>
+            <td>Clé primaire, auto-incrément</td>
+          </tr>
+          <tr>
+            <td class="code">titre</td>
+            <td>Titre du film</td>
+            <td>Texte (255)</td>
+            <td>Obligatoire</td>
+          </tr>
+          <tr>
+            <td class="code">annee</td>
+            <td>Année de sortie</td>
+            <td>Entier</td>
+            <td>Facultatif · entre 1888 et 2100</td>
+          </tr>
+          <tr>
+            <td class="code">note</td>
+            <td>Note personnelle</td>
+            <td>Réel</td>
+            <td>Obligatoire · entre 0,5 et 5 par demi-points</td>
+          </tr>
+          <tr>
+            <td class="code">critique</td>
+            <td>Avis personnel</td>
+            <td>Texte long</td>
+            <td>Facultatif</td>
+          </tr>
+          <tr>
+            <td class="code">date_visionnage</td>
+            <td>Date à laquelle le film a été vu</td>
+            <td>Date</td>
+            <td>Obligatoire · ne peut pas être dans le futur</td>
+          </tr>
+          <tr>
+            <td class="code">id_genre</td>
+            <td>Identifiant du genre</td>
+            <td>Entier</td>
+            <td>Clé primaire, auto-incrément</td>
+          </tr>
+          <tr>
+            <td class="code">libelle</td>
+            <td>Nom du genre (Sci-Fi, Comédie…)</td>
+            <td>Texte (100)</td>
+            <td>Obligatoire · unique</td>
+          </tr>
+        </table>
+      </div>
 
       <div class="rule" style="margin-top:26px">
         <strong style="color:#e7b552">Règles de gestion</strong><br />
@@ -426,7 +517,7 @@
       <div class="sec-num">02</div>
       <h2>MCD — Modèle Conceptuel de Données</h2>
       <p class="sec-desc">Deux entités, FILM et GENRE, reliées par l'association APPARTENIR. L'identifiant de chaque
-        entité est souligné.</p>
+        entité est souligné. La cardinalité est lue du côté de l'entité dont elle est proche.</p>
 
       <div class="mcd">
         <div class="entity">
@@ -442,15 +533,11 @@
         </div>
 
         <div class="assoc-link">
-          <div class="assoc-row">
-            <div class="assoc-line"></div>
-            <div class="assoc">appartenir</div>
-            <div class="assoc-line"></div>
-          </div>
-          <div class="cards">
-            <span class="card-label">(0,1)</span>
-            <span class="card-label">(0,n)</span>
-          </div>
+          <span class="card-label">(0,1)</span>
+          <span class="assoc-line"></span>
+          <span class="assoc">appartenir</span>
+          <span class="assoc-line"></span>
+          <span class="card-label">(0,n)</span>
         </div>
 
         <div class="entity">
@@ -479,67 +566,71 @@
       </div>
 
       <div class="h3">Relation GENRE</div>
-      <table class="spacer-table">
-        <tr>
-          <th>Attribut</th>
-          <th>Type logique</th>
-          <th>Rôle</th>
-        </tr>
-        <tr>
-          <td class="code">id_genre</td>
-          <td>Entier</td>
-          <td>Clé primaire <span class="pk-badge">PK</span></td>
-        </tr>
-        <tr>
-          <td class="code">libelle</td>
-          <td>Texte (100)</td>
-          <td>Unique <span class="uk-badge">UNIQUE</span></td>
-        </tr>
-      </table>
+      <div class="table-scroll spacer-table">
+        <table>
+          <tr>
+            <th>Attribut</th>
+            <th>Type logique</th>
+            <th>Rôle</th>
+          </tr>
+          <tr>
+            <td class="code">id_genre</td>
+            <td>Entier</td>
+            <td>Clé primaire <span class="pk-badge">PK</span></td>
+          </tr>
+          <tr>
+            <td class="code">libelle</td>
+            <td>Texte (100)</td>
+            <td>Unique <span class="uk-badge">UNIQUE</span></td>
+          </tr>
+        </table>
+      </div>
 
       <div class="h3">Relation FILM</div>
-      <table>
-        <tr>
-          <th>Attribut</th>
-          <th>Type logique</th>
-          <th>Rôle</th>
-        </tr>
-        <tr>
-          <td class="code">id_film</td>
-          <td>Entier</td>
-          <td>Clé primaire <span class="pk-badge">PK</span></td>
-        </tr>
-        <tr>
-          <td class="code">titre</td>
-          <td>Texte (255)</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="code">annee</td>
-          <td>Entier, NULL</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="code">note</td>
-          <td>Réel</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="code">critique</td>
-          <td>Texte long, NULL</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="code">date_visionnage</td>
-          <td>Date</td>
-          <td>—</td>
-        </tr>
-        <tr>
-          <td class="code">id_genre</td>
-          <td>Entier, NULL</td>
-          <td>Clé étrangère → GENRE(id_genre) <span class="fk-badge">FK</span></td>
-        </tr>
-      </table>
+      <div class="table-scroll">
+        <table>
+          <tr>
+            <th>Attribut</th>
+            <th>Type logique</th>
+            <th>Rôle</th>
+          </tr>
+          <tr>
+            <td class="code">id_film</td>
+            <td>Entier</td>
+            <td>Clé primaire <span class="pk-badge">PK</span></td>
+          </tr>
+          <tr>
+            <td class="code">titre</td>
+            <td>Texte (255)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="code">annee</td>
+            <td>Entier, NULL</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="code">note</td>
+            <td>Réel</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="code">critique</td>
+            <td>Texte long, NULL</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="code">date_visionnage</td>
+            <td>Date</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="code">id_genre</td>
+            <td>Entier, NULL</td>
+            <td>Clé étrangère → GENRE(id_genre) <span class="fk-badge">FK</span></td>
+          </tr>
+        </table>
+      </div>
 
       <div class="rule">
         <strong style="color:#e7b552">Règle de passage appliquée</strong> — Association binaire de type 1:N
@@ -557,67 +648,71 @@
         UNIQUE et REFERENCES.</p>
 
       <div class="h3">Table genre</div>
-      <table class="spacer-table">
-        <tr>
-          <th>Colonne</th>
-          <th>Type SQLite</th>
-          <th>Contraintes</th>
-        </tr>
-        <tr>
-          <td class="code">id_genre</td>
-          <td class="code">INTEGER</td>
-          <td class="code">PRIMARY KEY AUTOINCREMENT</td>
-        </tr>
-        <tr>
-          <td class="code">libelle</td>
-          <td class="code">VARCHAR(100)</td>
-          <td class="code">NOT NULL · UNIQUE</td>
-        </tr>
-      </table>
+      <div class="table-scroll spacer-table">
+        <table>
+          <tr>
+            <th>Colonne</th>
+            <th>Type SQLite</th>
+            <th>Contraintes</th>
+          </tr>
+          <tr>
+            <td class="code">id_genre</td>
+            <td class="code">INTEGER</td>
+            <td class="code">PRIMARY KEY AUTOINCREMENT</td>
+          </tr>
+          <tr>
+            <td class="code">libelle</td>
+            <td class="code">VARCHAR(100)</td>
+            <td class="code">NOT NULL · UNIQUE</td>
+          </tr>
+        </table>
+      </div>
 
       <div class="h3">Table film</div>
-      <table class="spacer-table">
-        <tr>
-          <th>Colonne</th>
-          <th>Type SQLite</th>
-          <th>Contraintes</th>
-        </tr>
-        <tr>
-          <td class="code">id_film</td>
-          <td class="code">INTEGER</td>
-          <td class="code">PRIMARY KEY AUTOINCREMENT</td>
-        </tr>
-        <tr>
-          <td class="code">titre</td>
-          <td class="code">VARCHAR(255)</td>
-          <td class="code">NOT NULL</td>
-        </tr>
-        <tr>
-          <td class="code">annee</td>
-          <td class="code">INTEGER</td>
-          <td class="code">NULL · CHECK (annee BETWEEN 1888 AND 2100)</td>
-        </tr>
-        <tr>
-          <td class="code">note</td>
-          <td class="code">REAL</td>
-          <td class="code">NOT NULL · CHECK (note BETWEEN 0.5 AND 5.0)</td>
-        </tr>
-        <tr>
-          <td class="code">critique</td>
-          <td class="code">TEXT</td>
-          <td class="code">NULL</td>
-        </tr>
-        <tr>
-          <td class="code">date_visionnage</td>
-          <td class="code">DATE</td>
-          <td class="code">NOT NULL</td>
-        </tr>
-        <tr>
-          <td class="code">id_genre</td>
-          <td class="code">INTEGER</td>
-          <td class="code">NULL · REFERENCES genre(id_genre)</td>
-        </tr>
-      </table>
+      <div class="table-scroll spacer-table">
+        <table>
+          <tr>
+            <th>Colonne</th>
+            <th>Type SQLite</th>
+            <th>Contraintes</th>
+          </tr>
+          <tr>
+            <td class="code">id_film</td>
+            <td class="code">INTEGER</td>
+            <td class="code">PRIMARY KEY AUTOINCREMENT</td>
+          </tr>
+          <tr>
+            <td class="code">titre</td>
+            <td class="code">VARCHAR(255)</td>
+            <td class="code">NOT NULL</td>
+          </tr>
+          <tr>
+            <td class="code">annee</td>
+            <td class="code">INTEGER</td>
+            <td class="code">NULL · CHECK (annee BETWEEN 1888 AND 2100)</td>
+          </tr>
+          <tr>
+            <td class="code">note</td>
+            <td class="code">REAL</td>
+            <td class="code">NOT NULL · CHECK (note BETWEEN 0.5 AND 5.0)</td>
+          </tr>
+          <tr>
+            <td class="code">critique</td>
+            <td class="code">TEXT</td>
+            <td class="code">NULL</td>
+          </tr>
+          <tr>
+            <td class="code">date_visionnage</td>
+            <td class="code">DATE</td>
+            <td class="code">NOT NULL</td>
+          </tr>
+          <tr>
+            <td class="code">id_genre</td>
+            <td class="code">INTEGER</td>
+            <td class="code">NULL · REFERENCES genre(id_genre)</td>
+          </tr>
+        </table>
+      </div>
 
       <div class="h3">Script SQL</div>
       <div class="sql"><span class="kw">CREATE TABLE</span> genre (
@@ -648,8 +743,12 @@
       </div>
     </section>
 
-  </div>
+    <!-- ================= RETOUR ================= -->
+    <footer class="doc-footer">
+      <a class="btn-home" href="/index.html">← Retour à l'accueil</a>
+    </footer>
 
+  </div>
 </body>
 
 </html>
